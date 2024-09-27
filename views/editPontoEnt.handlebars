@@ -1,0 +1,13 @@
+<main>
+    <h1>Editar Ponto de Entrada</h1>
+    <form action="/ponto-ent/{{pontoEnt.id}}?_method=PUT" method="POST">
+        <label for="nomeCompleto">Nome Completo:</label>
+        <input type="text" id="nomeCompleto" name="nomeCompleto" value="{{pontoEnt.nomeCompleto}}" required>
+        <label for="horaEnt">Hora de Entrada:</label>
+        <input type="text" id="horaEnt" name="horaEnt" value="{{pontoEnt.horaEnt}}" required>
+        <label for="data">Data:</label>
+        <input type="date" id="data" name="data" value="{{pontoEnt.data}}" required>
+        <button type="submit">Atualizar</button>
+    </form>
+    <a href="/" class="btn-voltar"> <i class="fa-solid fa-arrow-left"></i>Voltar</a>
+</main>

@@ -1,0 +1,32 @@
+<main>
+
+<h1>Lista de Pontos de Saída</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome Completo</th>
+                <th>Hora de Saída</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each pontosSai}}
+            <tr>
+                <td>{{id}}</td>
+                <td>{{nomeCompleto}}</td>
+                <td>{{horaSai}}</td>
+                <td>{{data}}</td>
+                <td>
+                    <a href="/ponto-sai/{{id}}/edit">Editar</a>
+                    <form action="/ponto-sai/{{id}}?_method=DELETE" method="POST" style="display:inline;">
+                        <button type="submit">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    <a href="/" class="btn-voltar"> <i class="fa-solid fa-arrow-left"></i>Voltar</a>
+</main>
