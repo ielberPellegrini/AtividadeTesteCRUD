@@ -1,0 +1,22 @@
+<main>
+
+    <form action="/registrarPonto" method="POST">
+        <h3>Bater ponto</h3>
+        <label for="matricula">Matricula:</label>
+        <input type="text" id="matricula" name="matricula" maxlength="5" required autofocus>
+
+        <label for="senha">Senha:</label>
+        <input type="password" id="senha" name="senha" required>
+
+
+        <select name="time">
+            <option value="" disabled selected>Selecione uma opção</option>
+            <option value="entrada">Entrada</option>
+            <option value="intervalo">Intervalo</option>
+            <option value="saida">Saída</option>
+        </select>
+        <button type="submit">Registrar</button>
+    </form>
+    <a href="/" class="btn-voltar"> <i class="fa-solid fa-arrow-left"></i>Voltar</a>
+
+</main>
