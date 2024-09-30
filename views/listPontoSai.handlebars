@@ -1,6 +1,6 @@
 <main>
 
-<h1>Lista de Pontos de Saída</h1>
+    <h1>Lista de Pontos de Saída</h1>
     <table>
         <thead>
             <tr>
@@ -18,11 +18,13 @@
                 <td>{{nomeCompleto}}</td>
                 <td>{{horaSai}}</td>
                 <td>{{data}}</td>
-                <td>
+                <td class="action">
+                <button>
                     <a href="/ponto-sai/{{id}}/edit">Editar</a>
-                    <form action="/ponto-sai/{{id}}?_method=DELETE" method="POST" style="display:inline;">
-                        <button type="submit">Excluir</button>
-                    </form>
+                </button>
+                <form action="/ponto-sai/{{id}}?_method=DELETE" method="POST">
+                    <button type="submit">Excluir</button>
+                </form>
                 </td>
             </tr>
             {{/each}}

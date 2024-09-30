@@ -1,6 +1,6 @@
 <main>
     <h1>Editar Ponto de Entrada</h1>
-    <form action="/ponto-ent/{{pontoEnt.id}}?_method=PUT" method="POST">
+    <form action="/ponto-ent/{{pontoEnt.id}}?_method=PUT" method="POST"  class="form-edit">
         <label for="nomeCompleto">Nome Completo:</label>
         <input type="text" id="nomeCompleto" name="nomeCompleto" value="{{pontoEnt.nomeCompleto}}" required>
         <label for="horaEnt">Hora de Entrada:</label>

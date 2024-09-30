@@ -18,9 +18,11 @@
                 <td>{{nomeCompleto}}</td>
                 <td>{{horaEnt}}</td>
                 <td>{{data}}</td>
-                <td>
+                <td class="action">
+                    <button>
                     <a href="/ponto-ent/{{id}}/edit">Editar</a>
-                    <form action="/ponto-ent/{{id}}?_method=DELETE" method="POST" style="display:inline;">
+                    </button>
+                    <form action="/ponto-ent/{{id}}?_method=DELETE" method="POST" >
                         <button type="submit">Excluir</button>
                     </form>
                 </td>
