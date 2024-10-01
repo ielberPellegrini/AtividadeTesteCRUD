@@ -2,9 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const { engine } = require('express-handlebars');
-const { PontoEnt, PontoSai } = require('./src/models');
+const { PontoEnt, PontoSai } = require('../src/models');
 const moment = require('moment-timezone');
-const PDFDocument = require('pdfkit');
+const request = require('supertest');
 
 const app = express();
 const PORT = process.env.PORT;
@@ -21,6 +21,7 @@ app.engine('handlebars', engine({
         allowProtoMethodsByDefault: true
     }
 }));
+
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
@@ -41,7 +42,7 @@ app.post('/ponto-ent', async (req, res) => {
         await PontoEnt.create({
             nomeCompleto,
             horaEnt: now.format('HH:mm:ss'),
-            data: now.toISOString() // Usa o formato ISO para garantir precisão
+            data: now.toISOString()
         });
         res.redirect('/');
     } catch (error) {
@@ -50,7 +51,7 @@ app.post('/ponto-ent', async (req, res) => {
     }
 });
 
-// Formulário para registrar ponto de saída
+
 app.get('/ponto-sai', (req, res) => {
     res.render('formPontoSai');
 });
@@ -62,7 +63,7 @@ app.post('/ponto-sai', async (req, res) => {
         await PontoSai.create({
             nomeCompleto,
             horaSai: now.format('HH:mm:ss'),
-            data: now.toISOString() // Usa o formato ISO para garantir precisão
+            data: now.toISOString()
         });
         res.redirect('/');
     } catch (error) {
@@ -71,7 +72,7 @@ app.post('/ponto-sai', async (req, res) => {
     }
 });
 
-// Listagem de pontos de entrada
+
 app.get('/pontos-ent', async (req, res) => {
     try {
         const pontosEnt = await PontoEnt.findAll();
@@ -87,7 +88,7 @@ app.get('/pontos-ent', async (req, res) => {
     }
 });
 
-// Listagem de pontos de saída
+
 app.get('/pontos-sai', async (req, res) => {
     try {
         const pontosSai = await PontoSai.findAll();
@@ -103,12 +104,12 @@ app.get('/pontos-sai', async (req, res) => {
     }
 });
 
-// Formulário para editar ponto de entrada
+
 app.get('/ponto-ent/:id/edit', async (req, res) => {
     try {
         const pontoEnt = await PontoEnt.findByPk(req.params.id);
         if (pontoEnt) {
-            pontoEnt.data = moment(pontoEnt.data).tz('America/Bahia').format('YYYY-MM-DD'); // Ajusta o formato da data
+            pontoEnt.data = moment(pontoEnt.data).tz('America/Bahia').format('YYYY-MM-DD');
             res.render('editPontoEnt', { pontoEnt });
         } else {
             res.status(404).send('Entrada não encontrada');
@@ -122,7 +123,7 @@ app.get('/ponto-ent/:id/edit', async (req, res) => {
 app.put('/ponto-ent/:id', async (req, res) => {
     try {
         const { nomeCompleto, horaEnt, data } = req.body;
-        const formattedDate = moment.tz(data, 'America/Bahia').toISOString(); // Usa o formato ISO
+        const formattedDate = moment.tz(data, 'America/Bahia').toISOString();
 
         if (!moment(formattedDate).isValid()) {
             throw new Error('Data inválida');
@@ -131,7 +132,7 @@ app.put('/ponto-ent/:id', async (req, res) => {
             {
                 nomeCompleto,
                 horaEnt,
-                data: formattedDate // Usa o formato ISO
+                data: formattedDate
             },
             { where: { id: req.params.id } }
         );
@@ -142,12 +143,12 @@ app.put('/ponto-ent/:id', async (req, res) => {
     }
 });
 
-// Formulário para editar ponto de saída
+
 app.get('/ponto-sai/:id/edit', async (req, res) => {
     try {
         const pontoSai = await PontoSai.findByPk(req.params.id);
         if (pontoSai) {
-            pontoSai.data = moment(pontoSai.data).tz('America/Bahia').format('YYYY-MM-DD'); // Ajusta o formato da data
+            pontoSai.data = moment(pontoSai.data).tz('America/Bahia').format('YYYY-MM-DD');
             res.render('editPontoSai', { pontoSai });
         } else {
             res.status(404).send('Saída não encontrada');
@@ -161,7 +162,7 @@ app.get('/ponto-sai/:id/edit', async (req, res) => {
 app.put('/ponto-sai/:id', async (req, res) => {
     try {
         const { nomeCompleto, horaSai, data } = req.body;
-        const formattedDate = moment.tz(data, 'America/Bahia').toISOString(); // Usa o formato ISO
+        const formattedDate = moment.tz(data, 'America/Bahia').toISOString();
 
         if (!moment(formattedDate).isValid()) {
             throw new Error('Data inválida');
@@ -170,7 +171,7 @@ app.put('/ponto-sai/:id', async (req, res) => {
             {
                 nomeCompleto,
                 horaSai,
-                data: formattedDate // Usa o formato ISO
+                data: formattedDate
             },
             { where: { id: req.params.id } }
         );
@@ -181,7 +182,7 @@ app.put('/ponto-sai/:id', async (req, res) => {
     }
 });
 
-// Excluir ponto de entrada
+
 app.delete('/ponto-ent/:id', async (req, res) => {
     try {
         await PontoEnt.destroy({ where: { id: req.params.id } });
@@ -192,7 +193,6 @@ app.delete('/ponto-ent/:id', async (req, res) => {
     }
 });
 
-// Excluir ponto de saída
 app.delete('/ponto-sai/:id', async (req, res) => {
     try {
         await PontoSai.destroy({ where: { id: req.params.id } });
@@ -206,7 +206,7 @@ app.delete('/ponto-sai/:id', async (req, res) => {
 app.get('/relatorio-pontos-ent', async (req, res) => {
     try {
         const pontosEnt = await PontoEnt.findAll();
-        
+
         const doc = new PDFDocument();
 
         res.setHeader('Content-disposition', 'attachment; filename=relatorio_pontos_ent.pdf');
@@ -234,7 +234,7 @@ app.get('/relatorio-pontos-ent', async (req, res) => {
 app.get('/relatorio-pontos-sai', async (req, res) => {
     try {
         const pontosEnt = await PontoSai.findAll();
-        
+
         const doc = new PDFDocument();
 
         res.setHeader('Content-disposition', 'attachment; filename=relatorio_pontos_ent.pdf');
@@ -260,6 +260,31 @@ app.get('/relatorio-pontos-sai', async (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-    console.log(`Servidor funcionando na porta http://localhost:${PORT}/`);
+
+describe('Testes da Aplicação Express', function () {
+
+    it('Deve carregar a página inicial', function (done) {
+        request(app)
+            .get('/')
+            .expect('Content-Type', /html/)
+            .expect(200, done);
+    });
+
+    it('Deve registrar um ponto de entrada', function (done) {
+        request(app)
+            .post('/ponto-ent')
+            .send({ nomeCompleto: 'teste' })
+            .expect('Location', '/')
+            .expect(302, done);
+    });
+
+    it('Deve registrar um ponto de saida', function (done) {
+        request(app)
+            .post('/ponto-sai')
+            .send({ nomeCompleto: 'teste' })
+            .expect('Location', '/')
+            .expect(302, done);
+    });
+
+
 });

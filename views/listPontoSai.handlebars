@@ -19,16 +19,21 @@
                 <td>{{horaSai}}</td>
                 <td>{{data}}</td>
                 <td class="action">
-                <button>
-                    <a href="/ponto-sai/{{id}}/edit">Editar</a>
-                </button>
-                <form action="/ponto-sai/{{id}}?_method=DELETE" method="POST">
-                    <button type="submit">Excluir</button>
-                </form>
+                    <button>
+                        <a href="/ponto-sai/{{id}}/edit">Editar</a>
+                    </button>
+                    <form action="/ponto-sai/{{id}}?_method=DELETE" method="POST">
+                        <button type="submit">Excluir</button>
+                    </form>
                 </td>
             </tr>
             {{/each}}
         </tbody>
     </table>
-    <a href="/" class="btn-voltar"> <i class="fa-solid fa-arrow-left"></i>Voltar</a>
+
+    <div class="btn-main">
+        <a href="/" class="btn-voltar"> <i class="fa-solid fa-arrow-left"></i>Voltar</a>
+        <a href="/relatorio-pontos-sai" class="btn-relatorio">Relatório</a>
+    </div>
+    
 </main>

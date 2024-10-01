@@ -20,9 +20,9 @@
                 <td>{{data}}</td>
                 <td class="action">
                     <button>
-                    <a href="/ponto-ent/{{id}}/edit">Editar</a>
+                        <a href="/ponto-ent/{{id}}/edit">Editar</a>
                     </button>
-                    <form action="/ponto-ent/{{id}}?_method=DELETE" method="POST" >
+                    <form action="/ponto-ent/{{id}}?_method=DELETE" method="POST">
                         <button type="submit">Excluir</button>
                     </form>
                 </td>
@@ -30,5 +30,10 @@
             {{/each}}
         </tbody>
     </table>
-    <a href="/" class="btn-voltar"> <i class="fa-solid fa-arrow-left"></i>Voltar</a>
+
+    <div class="btn-main">
+        <a href="/" class="btn-voltar"> <i class="fa-solid fa-arrow-left"></i>Voltar</a>
+        <a href="/relatorio-pontos-ent" class="btn-relatorio">Relatório</a>
+    </div>
+
 </main>

@@ -1,0 +1,9 @@
+Folha de Ponto
+
+Teste de registro de ponto: Verifique se o sistema permite que os funcionários registrem corretamente o horário de entrada e saída.  OK
+
+Teste de cálculo de horas trabalhadas: Crie um teste para verificar se o sistema calcula corretamente as horas diárias, considerando intervalos de almoço.
+
+Teste de ajuste de ponto: Valide a funcionalidade que permite ajustes manuais no ponto por parte do gestor, garantindo que as horas alteradas sejam refletidas corretamente.
+
+Teste de relatórios de ponto: Teste a emissão de relatórios mensais de ponto, com cálculo correto de horas extras e faltas.
