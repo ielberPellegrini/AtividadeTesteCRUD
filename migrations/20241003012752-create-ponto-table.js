@@ -1,7 +1,7 @@
 'use strict';
-/** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('Pontos', {
       id: {
         allowNull: false,
@@ -10,13 +10,20 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       nomeCompleto: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false
       },
-      horaEnt: {
-        type: Sequelize.STRING
+      hora: {
+        type: Sequelize.TIME,
+        allowNull: false
       },
       data: {
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        allowNull: false
+      },
+      tipo: {
+        type: Sequelize.ENUM('Entrada', 'Intervalo', 'Saida'),
+        allowNull: false
       },
       createdAt: {
         allowNull: false,
@@ -28,7 +35,7 @@ module.exports = {
       }
     });
   },
-  async down(queryInterface, Sequelize) {
+  down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('Pontos');
   }
 };

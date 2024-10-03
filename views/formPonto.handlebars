@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bater Ponto</title>
+</head>
+<body>
+    <h1>Registro de Ponto</h1>
+
+    <form action="/ponto" method="POST">
+        <div>
+            <label for="nomeCompleto">Nome Completo:</label>
+            <input type="text" id="nomeCompleto" name="nomeCompleto" required>
+        </div>
+
+        <div>
+            <label for="tipo">Tipo de Ponto:</label>
+            <select id="tipo" name="tipo" required>
+                <option value="Entrada">Entrada</option>
+                <option value="Intervalo">Intervalo</option>
+                <option value="Saida">Saída</option>
+            </select>
+        </div>
+
+        <button type="submit">Bater Ponto</button>
+    </form>
+
+    <a href="/historico">Ver Histórico</a>
+</body>
+</html>

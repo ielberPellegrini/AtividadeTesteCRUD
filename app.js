@@ -2,12 +2,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const { engine } = require('express-handlebars');
-const { PontoEnt, PontoSai } = require('./src/models');
+const { Ponto } = require('./src/models');
 const moment = require('moment-timezone');
 const PDFDocument = require('pdfkit');
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -26,202 +26,132 @@ app.set('views', './views');
 
 app.use(express.static('public'))
 
+// Página inicial
 app.get('/', (req, res) => {
     res.render('home');
 });
 
-app.get('/ponto-ent', (req, res) => {
-    res.render('formPontoEnt');
+// Rota para exibir o formulário de registro de ponto
+app.get('/bater-ponto', (req, res) => {
+    res.render('formPonto');
 });
 
-app.post('/ponto-ent', async (req, res) => {
+// Registro de ponto (Entrada, Intervalo, Saída)
+app.post('/ponto', async (req, res) => {
     try {
-        const { nomeCompleto } = req.body;
+        const { nomeCompleto, tipo } = req.body;
         const now = moment().tz('America/Bahia');
-        await PontoEnt.create({
+
+        if (!['Entrada', 'Intervalo', 'Saida'].includes(tipo)) {
+            return res.status(400).send('Tipo de ponto inválido.');
+        }
+
+        await Ponto.create({
             nomeCompleto,
-            horaEnt: now.format('HH:mm:ss'),
-            data: now.toISOString() // Usa o formato ISO para garantir precisão
+            hora: now.format('HH:mm:ss'),
+            data: now.toISOString(),
+            tipo
         });
-        res.redirect('/');
+
+        res.redirect('/bater-ponto');
     } catch (error) {
-        console.error('Erro ao registrar entrada:', error);
-        res.status(500).send('Erro ao registrar entrada');
+        console.error('Erro ao registrar ponto:', error);
+        res.status(500).send('Erro ao registrar ponto');
     }
 });
 
-// Formulário para registrar ponto de saída
-app.get('/ponto-sai', (req, res) => {
-    res.render('formPontoSai');
-});
-
-app.post('/ponto-sai', async (req, res) => {
+// Listagem de todos os pontos
+app.get('/pontos', async (req, res) => {
     try {
-        const { nomeCompleto } = req.body;
-        const now = moment().tz('America/Bahia');
-        await PontoSai.create({
-            nomeCompleto,
-            horaSai: now.format('HH:mm:ss'),
-            data: now.toISOString() // Usa o formato ISO para garantir precisão
-        });
-        res.redirect('/');
-    } catch (error) {
-        console.error('Erro ao registrar saída:', error);
-        res.status(500).send('Erro ao registrar saída');
-    }
-});
-
-// Listagem de pontos de entrada
-app.get('/pontos-ent', async (req, res) => {
-    try {
-        const pontosEnt = await PontoEnt.findAll();
-        const formattedPontosEnt = pontosEnt.map(ponto => ({
+        const pontos = await Ponto.findAll();
+        const formattedPontos = pontos.map(ponto => ({
             ...ponto.toJSON(),
             data: moment(ponto.data).tz('America/Bahia').format('YYYY-MM-DD'),
-            horaEnt: moment(ponto.horaEnt, 'HH:mm:ss').format('HH:mm:ss')
+            hora: moment(ponto.hora, 'HH:mm:ss').format('HH:mm:ss')
         }));
-        res.render('listPontoEnt', { pontosEnt: formattedPontosEnt });
+        res.render('listPontos', { pontos: formattedPontos });
     } catch (error) {
-        console.error('Erro ao buscar entradas:', error);
-        res.status(500).send('Erro ao buscar entradas');
+        console.error('Erro ao buscar pontos:', error);
+        res.status(500).send('Erro ao buscar pontos');
     }
 });
 
-// Listagem de pontos de saída
-app.get('/pontos-sai', async (req, res) => {
+// Formulário para editar ponto
+app.get('/ponto/:id/edit', async (req, res) => {
     try {
-        const pontosSai = await PontoSai.findAll();
-        const formattedPontosSai = pontosSai.map(ponto => ({
-            ...ponto.toJSON(),
-            data: moment(ponto.data).tz('America/Bahia').format('YYYY-MM-DD'),
-            horaSai: moment(ponto.horaSai, 'HH:mm:ss').format('HH:mm:ss')
-        }));
-        res.render('listPontoSai', { pontosSai: formattedPontosSai });
-    } catch (error) {
-        console.error('Erro ao buscar saídas:', error);
-        res.status(500).send('Erro ao buscar saídas');
-    }
-});
-
-// Formulário para editar ponto de entrada
-app.get('/ponto-ent/:id/edit', async (req, res) => {
-    try {
-        const pontoEnt = await PontoEnt.findByPk(req.params.id);
-        if (pontoEnt) {
-            pontoEnt.data = moment(pontoEnt.data).tz('America/Bahia').format('YYYY-MM-DD'); // Ajusta o formato da data
-            res.render('editPontoEnt', { pontoEnt });
+        const ponto = await Ponto.findByPk(req.params.id);
+        if (ponto) {
+            ponto.data = moment(ponto.data).tz('America/Bahia').format('YYYY-MM-DD');
+            res.render('editPonto', { ponto });
         } else {
-            res.status(404).send('Entrada não encontrada');
+            res.status(404).send('Ponto não encontrado');
         }
     } catch (error) {
-        console.error('Erro ao buscar entrada para edição:', error);
-        res.status(500).send('Erro ao buscar entrada para edição');
+        console.error('Erro ao buscar ponto para edição:', error);
+        res.status(500).send('Erro ao buscar ponto para edição');
     }
 });
 
-app.put('/ponto-ent/:id', async (req, res) => {
+// Atualizar ponto
+app.put('/ponto/:id', async (req, res) => {
     try {
-        const { nomeCompleto, horaEnt, data } = req.body;
-        const formattedDate = moment.tz(data, 'America/Bahia').toISOString(); // Usa o formato ISO
+        const { nomeCompleto, hora, data, tipo } = req.body;
+        const formattedDate = moment.tz(data, 'America/Bahia').toISOString();
 
         if (!moment(formattedDate).isValid()) {
             throw new Error('Data inválida');
         }
-        await PontoEnt.update(
+        if (!['Entrada', 'Intervalo', 'Saida'].includes(tipo)) {
+            return res.status(400).send('Tipo de ponto inválido.');
+        }
+
+        await Ponto.update(
             {
                 nomeCompleto,
-                horaEnt,
-                data: formattedDate // Usa o formato ISO
+                hora,
+                data: formattedDate,
+                tipo
             },
             { where: { id: req.params.id } }
         );
-        res.redirect('/pontos-ent');
+        res.redirect('/pontos');
     } catch (error) {
-        console.error('Erro ao atualizar entrada:', error);
-        res.status(500).send('Erro ao atualizar entrada');
+        console.error('Erro ao atualizar ponto:', error);
+        res.status(500).send('Erro ao atualizar ponto');
     }
 });
 
-// Formulário para editar ponto de saída
-app.get('/ponto-sai/:id/edit', async (req, res) => {
+// Excluir ponto
+app.delete('/ponto/:id', async (req, res) => {
     try {
-        const pontoSai = await PontoSai.findByPk(req.params.id);
-        if (pontoSai) {
-            pontoSai.data = moment(pontoSai.data).tz('America/Bahia').format('YYYY-MM-DD'); // Ajusta o formato da data
-            res.render('editPontoSai', { pontoSai });
-        } else {
-            res.status(404).send('Saída não encontrada');
-        }
+        await Ponto.destroy({ where: { id: req.params.id } });
+        res.redirect('/pontos');
     } catch (error) {
-        console.error('Erro ao buscar saída para edição:', error);
-        res.status(500).send('Erro ao buscar saída para edição');
+        console.error('Erro ao excluir ponto:', error);
+        res.status(500).send('Erro ao excluir ponto');
     }
 });
 
-app.put('/ponto-sai/:id', async (req, res) => {
+// Relatório de pontos
+app.get('/relatorio-pontos', async (req, res) => {
     try {
-        const { nomeCompleto, horaSai, data } = req.body;
-        const formattedDate = moment.tz(data, 'America/Bahia').toISOString(); // Usa o formato ISO
-
-        if (!moment(formattedDate).isValid()) {
-            throw new Error('Data inválida');
-        }
-        await PontoSai.update(
-            {
-                nomeCompleto,
-                horaSai,
-                data: formattedDate // Usa o formato ISO
-            },
-            { where: { id: req.params.id } }
-        );
-        res.redirect('/pontos-sai');
-    } catch (error) {
-        console.error('Erro ao atualizar saída:', error);
-        res.status(500).send('Erro ao atualizar saída');
-    }
-});
-
-// Excluir ponto de entrada
-app.delete('/ponto-ent/:id', async (req, res) => {
-    try {
-        await PontoEnt.destroy({ where: { id: req.params.id } });
-        res.redirect('/pontos-ent');
-    } catch (error) {
-        console.error('Erro ao excluir entrada:', error);
-        res.status(500).send('Erro ao excluir entrada');
-    }
-});
-
-// Excluir ponto de saída
-app.delete('/ponto-sai/:id', async (req, res) => {
-    try {
-        await PontoSai.destroy({ where: { id: req.params.id } });
-        res.redirect('/pontos-sai');
-    } catch (error) {
-        console.error('Erro ao excluir saída:', error);
-        res.status(500).send('Erro ao excluir saída');
-    }
-});
-
-app.get('/relatorio-pontos-ent', async (req, res) => {
-    try {
-        const pontosEnt = await PontoEnt.findAll();
+        const pontos = await Ponto.findAll();
         
         const doc = new PDFDocument();
 
-        res.setHeader('Content-disposition', 'attachment; filename=relatorio_pontos_ent.pdf');
+        res.setHeader('Content-disposition', 'attachment; filename=relatorio_pontos.pdf');
         res.setHeader('Content-type', 'application/pdf');
 
         doc.pipe(res);
 
-        doc.fontSize(20).text('Relatório de Pontos de Entrada', { align: 'center' });
+        doc.fontSize(20).text('Relatório de Pontos', { align: 'center' });
         doc.moveDown();
 
-        doc.fontSize(12).text('ID | Nome Completo | Hora de Entrada | Data');
+        doc.fontSize(12).text('ID | Nome Completo | Hora | Data | Tipo');
         doc.moveDown();
 
-        pontosEnt.forEach(ponto => {
-            doc.text(`${ponto.id} | ${ponto.nomeCompleto} | ${ponto.horaEnt} | ${moment(ponto.data).tz('America/Bahia').format('YYYY-MM-DD')}`);
+        pontos.forEach(ponto => {
+            doc.text(`${ponto.id} | ${ponto.nomeCompleto} | ${ponto.hora} | ${moment(ponto.data).tz('America/Bahia').format('YYYY-MM-DD')} | ${ponto.tipo}`);
         });
 
         doc.end();
@@ -231,34 +161,79 @@ app.get('/relatorio-pontos-ent', async (req, res) => {
     }
 });
 
-app.get('/relatorio-pontos-sai', async (req, res) => {
+// Histórico de pontos batidos com cálculo de horas trabalhadas
+app.get('/historico', async (req, res) => {
     try {
-        const pontosEnt = await PontoSai.findAll();
-        
-        const doc = new PDFDocument();
+        const { nomeCompleto } = req.query;
 
-        res.setHeader('Content-disposition', 'attachment; filename=relatorio_pontos_ent.pdf');
-        res.setHeader('Content-type', 'application/pdf');
-
-        doc.pipe(res);
-
-        doc.fontSize(20).text('Relatório de Pontos de Entrada', { align: 'center' });
-        doc.moveDown();
-
-        doc.fontSize(12).text('ID | Nome Completo | Hora de Saida | Data');
-        doc.moveDown();
-
-        pontosEnt.forEach(ponto => {
-            doc.text(`${ponto.id} | ${ponto.nomeCompleto} | ${ponto.horaSai} | ${moment(ponto.data).tz('America/Bahia').format('YYYY-MM-DD')}`);
+        const historicoPontos = await Ponto.findAll({
+            where: { nomeCompleto },
+            order: [['data', 'ASC'], ['hora', 'ASC']]
         });
 
-        doc.end();
+        if (historicoPontos.length === 0) {
+            return res.render('histPonto', { nomeCompleto, historico: [] });
+        }
+
+        let historico = {};
+
+        historicoPontos.forEach(ponto => {
+            const chave = `${ponto.nomeCompleto}-${ponto.data}`;
+            
+            if (!historico[chave]) {
+                historico[chave] = {
+                    nomeCompleto: ponto.nomeCompleto,
+                    data: ponto.data,
+                    pontos: [],
+                    horasTrabalhadas: 0,
+                    minutosTrabalhados: 0,
+                    cargaHorariaExcedida: null
+                };
+            }
+            
+            historico[chave].pontos.push(ponto);
+        });
+
+        for (const chave in historico) {
+            const pontos = historico[chave].pontos;
+
+            const entrada = pontos.find(p => p.tipo === 'Entrada');
+            const saida = pontos.find(p => p.tipo === 'Saida');
+            const intervalos = pontos.filter(p => p.tipo === 'Intervalo');
+
+            if (!entrada || !saida) {
+                continue;
+            }
+
+            let totalIntervalo = 0;
+            for (let i = 0; i < intervalos.length; i += 2) {
+                const inicioIntervalo = moment(intervalos[i].hora, 'HH:mm:ss');
+                const fimIntervalo = intervalos[i + 1] ? moment(intervalos[i + 1].hora, 'HH:mm:ss') : moment();
+
+                totalIntervalo += fimIntervalo.diff(inicioIntervalo, 'minutes');
+            }
+
+            const inicioJornada = moment(entrada.hora, 'HH:mm:ss');
+            const fimJornada = moment(saida.hora, 'HH:mm:ss');
+            const tempoTrabalhado = fimJornada.diff(inicioJornada, 'minutes') - totalIntervalo;
+
+            const horasTrabalhadas = Math.floor(tempoTrabalhado / 60);
+            const minutosTrabalhados = tempoTrabalhado % 60;
+            const cargaHorariaExcedida = horasTrabalhadas > 8 ? `${horasTrabalhadas - 8}h excedentes` : null;
+
+            historico[chave].horasTrabalhadas = horasTrabalhadas;
+            historico[chave].minutosTrabalhados = minutosTrabalhados;
+            historico[chave].cargaHorariaExcedida = cargaHorariaExcedida;
+        }
+
+        const historicoArray = Object.values(historico);
+
+        res.render('histPonto', { nomeCompleto, historico: historicoArray });
     } catch (error) {
-        console.error('Erro ao gerar relatório:', error);
-        res.status(500).send('Erro ao gerar relatório');
+        console.error('Erro ao exibir o histórico:', error);
+        res.status(500).send('Erro ao exibir o histórico');
     }
 });
-
 
 app.listen(PORT, () => {
     console.log(`Servidor funcionando na porta http://localhost:${PORT}/`);
