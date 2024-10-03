@@ -286,5 +286,23 @@ describe('Testes da Aplicação Express', function () {
             .expect(302, done);
     });
 
+    it("Deve deletar um ponto de saída", function (done) {
+
+        PontoSai.findOne()
+            .then((pontoSai) => {
+                if (!pontoSai) {
+                    return done(new Error("Nenhum ponto de saída encontrado para exclusão"));
+                }
+
+                request(app)
+                    .delete(`/ponto-sai/${pontoSai.id}`)
+                    .expect("Location", "/pontos-sai")
+                    .expect(302, done);
+            })
+            .catch(done);
+    });
+
 
 });
+
+
