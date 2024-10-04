@@ -1,0 +1,23 @@
+{
+    "development": {
+        "username": "root",
+        "password": "root@123",
+        "database": "folha_de_ponto",
+        "host": "127.0.0.1",
+        "dialect": "mysql"
+    },
+    "test": {
+        "username": "root",
+        "password": "password",
+        "database": "folha_de_ponto_teste",
+        "host": "127.0.0.1",
+        "dialect": "mysql"
+    },
+    "production": {
+        "username": "root",
+        "password": "password",
+        "database": "folha_de_ponto_producao",
+        "host": "127.0.0.1",
+        "dialect": "mysql"
+        }
+}
